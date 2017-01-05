@@ -69,6 +69,7 @@ usage()
         f: findMine    :: e.g. $0 f -l
         search: find   :: e.g. $0 search t4240
         cp: upload     :: e.g. $0 cp 22609 [~/vlm]
+        autocp: smart copy
         nb: advanced search :: e.g $0 nb jhu2
         reboot: reboot
     "
@@ -87,14 +88,17 @@ core_sel()
             kkk=$realfile
             echo kernel: $realfile
             kkk_f=1
+            cp_file $kkk
         elif [ $ddd_f -eq 0 ];then
             ddd=$realfile
             echo dtb: $realfile
             ddd_f=1
+            cp_file $ddd
         elif [ $rrr_f -eq 0 ];then
             rrr=$realfile
             echo rootfs: $realfile
             rrr_f=1
+            cp_file $rrr
         fi
     done
 
@@ -103,6 +107,7 @@ core_sel()
 #pick up the related filed from project
 smart_copy()
 {
+    rm -rf /folk/jhu2/vlm/*
     apple="export"
     grape="tmp/deploy/images/"
     kkk_f=1
@@ -150,6 +155,11 @@ got_copyfile()
      done
 }
 
+cp_file()
+{
+    cp $1 /folk/jhu2/vlm/
+}
+
 #main
 [ $# -gt 3 ] &&{ echo "Too many options...";usage;exit 1; }
 [ -z $1 ] &&{ echo "please input action...";usage;exit 1; }
@@ -168,8 +178,8 @@ case $1 in
     off) opt="turnOff";;
     g) opt="getAttr";;
     search) opt="find";;
-#    cp) opt="copyFile";got_copyfile;;
-    cp) opt="copyFile";smart_copy;;
+    cp) opt="copyFile";got_copyfile;;
+    autocp) opt="copyFile";smart_copy;got_copyfile;;
     reboot) opt="reboot";;
     nb) opt="nb";;
     *) echo "wrong options";;
