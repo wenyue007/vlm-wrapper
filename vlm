@@ -3,10 +3,21 @@
 copy_path=${3}
 copy_path=${copy_path:-"/folk/jhu2/vlm/"}
 
+super_nb()
+{
+    search_val=$1
+    cap_upper=`echo -n ${search_val:0-0:1} |tr [:lower:] [:upper:];echo ${search_val:1}|tr [:upper:] [:lower:]`
+    all_upper=`echo $search_val|tr [:lower:] [:upper:]`
+    nb $search_val
+    nb $cap_upper
+    nb $all_upper
+}
+
 nb()
 {
     search_val=$1
-    for target_id in `/folk/vlm/commandline/vlmTool find  -s amazon.wrs.com -l all | grep "$search_val" -B34|grep "^Target ID" |awk -F": " '{print $2}'`
+    echo "Searching $search_val ..."
+    for target_id in `/folk/vlm/commandline/vlmTool find  -s amazon.wrs.com -l all | grep -i "$search_val" -B34|grep "^Target ID" |awk -F": " '{print $2}'`
     do
         target_info=`/folk/vlm/commandline/vlmTool getAttr -s amazon.wrs.com -t $target_id all | grep $search_val`
         target_reserved=`/folk/vlm/commandline/vlmTool getAttr -s amazon.wrs.com -t $target_id all | grep "^Reserved By"` 
@@ -112,7 +123,7 @@ esac
 if [ $opt = "reserve" ]; then
     /folk/vlm/commandline/vlmTool reserve -s amazon.wrs.com -t $2
 elif [ $opt = "nb" ];then
-    nb $2 
+    super_nb $2 
 elif [ $opt = "unreserve" ];then
     /folk/vlm/commandline/vlmTool unreserve -s amazon.wrs.com -t $2
 elif [ $opt = "reboot" ];then
