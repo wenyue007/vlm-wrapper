@@ -74,30 +74,81 @@ usage()
     "
 }
 
-#pick up the related filed from $copy_path
-got_copyfile()
+core_sel()
 {
-    if [ ! -d "$copy_path" ]; then echo "Give me the correct path:-)";exit 1; fi 
-    for fff in `ls $copy_path`
+    cd $1 >& /dev/null
+    for ant in `ls ` 
     do
-        realfile=`readlink -f $copy_path/$fff`
-        kkk_f=`echo $realfile | grep ".bin$" &> /dev/null;echo $?`
-        ddd_f=`echo $realfile | grep ".dtb$" &> /dev/null;echo $?`
-        rrr_f=`echo $realfile | grep ".tar.bz2$" &> /dev/null;echo $?`
-
+        realfile=`readlink -f $ant`
+        [ $kkk_f -eq 1 ] && kkk_f=`echo $realfile | grep ".bin$" &> /dev/null;echo $?`
+        [ $ddd_f -eq 1 ] && ddd_f=`echo $realfile | grep ".dtb$" &> /dev/null;echo $?`
+        [ $rrr_f -eq 1 ] && rrr_f=`echo $realfile | grep ".tar.bz2$" &> /dev/null;echo $?`
         if [ $kkk_f -eq 0 ];then
-           kkk=$realfile
-           echo kernel: $realfile
+            kkk=$realfile
+            echo kernel: $realfile
+            kkk_f=1
         elif [ $ddd_f -eq 0 ];then
-           ddd=$realfile
-           echo dtb: $realfile
+            ddd=$realfile
+            echo dtb: $realfile
+            ddd_f=1
         elif [ $rrr_f -eq 0 ];then
-           rrr=$realfile
-           echo rootfs: $realfile
+            rrr=$realfile
+            echo rootfs: $realfile
+            rrr_f=1
         fi
     done
+
 }
 
+#pick up the related filed from project
+smart_copy()
+{
+    apple="export"
+    grape="tmp/deploy/images/"
+    kkk_f=1
+    ddd_f=1
+    rrr_f=1
+    current_path=`pwd`
+    cur_check=${current_path##*/}
+    if [ -d "$apple" -o "$cur_check" == "export"  ]; then
+        core_sel "export"
+    elif [ -d "$grape" ];then
+        first_path=`find $grape -name "*.tar.bz2"| head -1`
+        third_path=`echo $first_path|awk -F"/" '{print $4}'`
+        second_path=$grape$third_path
+        core_sel $second_path
+    elif [ "$cur_check" = "tmp" -o "$cur_check" = "deploy" -o "$cur_check" = "images" ];then
+        first_path=`find $current_path -name "*.tar.bz2"| head -1`
+        second_path=${first_path%/*}
+        core_sel $second_path
+    else
+        echo "Incorrect path for kernel and rootfs files."
+        exit 1
+    fi
+}
+
+got_copyfile()
+{
+     if [ ! -d "$copy_path" ]; then echo "Give me the correct path:-)";exit 1; fi 
+     for fff in `ls $copy_path`
+     do
+         realfile=`readlink -f $copy_path/$fff`
+         kkk_f=`echo $realfile | grep ".bin$" &> /dev/null;echo $?`
+         ddd_f=`echo $realfile | grep ".dtb$" &> /dev/null;echo $?`
+         rrr_f=`echo $realfile | grep ".tar.bz2$" &> /dev/null;echo $?`
+ 
+         if [ $kkk_f -eq 0 ];then
+            kkk=$realfile
+            echo kernel: $realfile
+         elif [ $ddd_f -eq 0 ];then
+            ddd=$realfile
+            echo dtb: $realfile
+         elif [ $rrr_f -eq 0 ];then
+            rrr=$realfile
+            echo rootfs: $realfile
+         fi
+     done
+}
 
 #main
 [ $# -gt 3 ] &&{ echo "Too many options...";usage;exit 1; }
@@ -117,7 +168,8 @@ case $1 in
     off) opt="turnOff";;
     g) opt="getAttr";;
     search) opt="find";;
-    cp) opt="copyFile";got_copyfile;;
+#    cp) opt="copyFile";got_copyfile;;
+    cp) opt="copyFile";smart_copy;;
     reboot) opt="reboot";;
     nb) opt="nb";;
     *) echo "wrong options";;
