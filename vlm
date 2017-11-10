@@ -107,6 +107,7 @@ core_sel()
 #pick up the related filed from project
 smart_copy()
 {
+    echo "Doing smart_copy..."
     rm -rf /folk/jhu2/vlm/*
     apple="export"
     grape="tmp/deploy/images/"
@@ -157,6 +158,7 @@ got_copyfile()
 
 cp_file()
 {
+    echo "Copying $1 ..."
     cp $1 /folk/jhu2/vlm/
 }
 
@@ -210,10 +212,16 @@ elif [ $opt = "copyFile" ];then
         echo "/folk/vlm/commandline/vlmTool copyFile -s amazon.wrs.com -t $2  -k $kkk -r $rrr"
         sleep 5
         /folk/vlm/commandline/vlmTool copyFile -s amazon.wrs.com -t $2  -k $kkk  -r $rrr
+        echo "Rebooting target $2"
+        sleep 3
+        /folk/vlm/commandline/vlmTool reboot -s amazon.wrs.com -t $2
     else
         echo "/folk/vlm/commandline/vlmTool copyFile -s amazon.wrs.com -t $2  -k $kkk -d $ddd -r $rrr"
         sleep 5
         /folk/vlm/commandline/vlmTool copyFile -s amazon.wrs.com -t $2  -k $kkk -d $ddd -r $rrr
+        echo "Rebooting target $2"
+        sleep 3
+        /folk/vlm/commandline/vlmTool reboot -s amazon.wrs.com -t $2
     fi
 fi
 
